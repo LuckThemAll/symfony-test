@@ -2,17 +2,16 @@
 
 namespace AppBundle\Controller;
 
+use Doctrine\ORM\Mapping\Entity;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 
-class CRUDController extends Controller
+class EditController extends BaseController
 {
-    /**
-     * @Route("/create/", name="create")
-     */
-    public function createAction(Request $request)
+    public function createAction(Request $request, Entity $entity)
     {
+
         return $this->render('default/index.html.twig', [
             'base_dir' => realpath($this->getParameter('kernel.project_dir')).DIRECTORY_SEPARATOR,
         ]);

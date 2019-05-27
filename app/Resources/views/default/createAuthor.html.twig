@@ -7,6 +7,13 @@
     <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}" />
 </head>
 <body>
+<form name="Author_info" method="post">
+    {% if created_author is defined %}
+        Author {{ created_author }} created successfully <br>
+    {% endif %}
+    <input type="text" placeholder="Alexander Pushkin..." name="name">
+    <input type="submit" value="Submit">
+</form>
 {% block body %}{% endblock %}
 {% block javascripts %}{% endblock %}
 </body>

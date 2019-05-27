@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <title>{% block title %}Welcome!{% endblock %}</title>
+    {% block stylesheets %}{% endblock %}
+    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
+    <script type="text/javascript">
+        function silent_remove(id) {
+            href = "/authors/delete/" + id;
+            $.post({
+                url: href,
+                success: function (){$("#"+id).remove();}
+            });
+            // window.open(href);
+        }
+    </script>
+</head>
+<body>
+<form>
+    <table>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Action</th>
+        </tr>
+        {% for author in authors %}
+            <tr id="{{ author.id }}">
+                <td>{{ author.id }}</td>
+                <td>{{ author.name }}</td>
+                <td>
+                    <button type="button" onclick="silent_remove({{ author.id }});">Delete</button>
+                    <button type="button" onclick="window.open('./update/{{ author.id }}');">Edit</button>
+                </td>
+            </tr>
+        {% endfor %}
+    </table>
+</form>
+<button type="button" onclick="window.open('/authors/create/');">New author</button>
+{% block body %}{% endblock %}
+{% block javascripts %}{% endblock %}
+</body>
+</html>
