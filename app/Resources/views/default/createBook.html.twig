@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <title>{% block title %}Welcome!{% endblock %}</title>
+    {% block stylesheets %}{% endblock %}
+    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
+    <script type="text/javascript">
+        function silent_remove(id) {
+            href = "/authors/delete/" + id;
+            $.post({
+                url: href,
+                success: function (){$("#"+id).remove();}
+            });
+            // window.open(href);
+        }
+    </script>
+</head>
+<body>
+<form method="post">
+    <table>
+        <tr>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Publication date</th>
+            <th>Authors</th>
+            <th>Image</th>
+        </tr>
+        <tr>
+            <td><input type="text" name="name" placeholder="War and Peace"></td>
+            <td><input type="text" name="description" placeholder="Description..."></td>
+            <td><input type="number" name="publication_date" placeholder="1867"></td>
+            <td>
+                <label>
+                    <select name="authors[]" multiple="multiple">
+                        {% for author in authors %}
+                            <option value="{{ author.id }}">{{ author.name }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+            </td>
+            <td><input type="file"></td>
+        </tr>
+    </table>
+    <button type="button" onclick="window.open('../../authors/create/');">New author</button>
+    <button type="submit" >Save</button>
+</form>
+{% block body %}{% endblock %}
+{% block javascripts %}{% endblock %}
+</body>
+</html>

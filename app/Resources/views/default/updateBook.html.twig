@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <title>{% block title %}Welcome!{% endblock %}</title>
+    {% block stylesheets %}{% endblock %}
+    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
+    <script type="text/javascript">
+        function silent_remove(id) {
+            href = "/books/delete/" + id;
+            $.post({
+                url: href,
+                success: function (){$("#"+id).remove();}
+            });
+            // window.open(href);
+        }
+    </script>
+</head>
+<body>
+<form method="post">
+    <table>
+        <tr>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Publication date</th>
+            <th>Authors</th>
+            <th>Image</th>
+        </tr>
+        <tr>
+            <td><input type="text" value="{{ book.name }}" name="name"></td>
+            <td><input type="text" value="{{ book.description }}" name="description"></td>
+            <td><input type="text" value="{{ book.publication_date }}" name="publication_date"></td>
+            <td>
+                <select multiple="multiple" name="authors[]">
+                    {% for author in authors %}
+                        <option value="{{ author.id }}" {% if author.name in current_authors_names %} selected {% endif %}>{{ author.name }}</option>
+                    {% endfor %}
+                </select>
+
+            </td>
+            <td>Image</td>
+            <td>
+                <button type="button" onclick="silent_remove({{ book.id }});">Delete</button>
+            </td>
+        </tr>
+    </table>
+    <button type="button" onclick="window.open('../../authors/create/');">New Author</button>
+    <button type="submit">Save</button>
+</form>
+
+{% block body %}{% endblock %}
+{% block javascripts %}{% endblock %}
+</body>
+</html>

@@ -80,13 +80,16 @@ class AuthorController extends BaseController
         }
         if ($request->getMethod() == "POST"){
             $new_name = $request->request->get('name');
-            $author->setName($new_name);
-            $author->save($this->getDoctrine()->getManager());
-            return $this->render('default/updateAuthor.html.twig', [
-                'base_dir' => realpath($this->getParameter('kernel.project_dir')).DIRECTORY_SEPARATOR,
-                'author_name' => strval($author->getName()),
-            ]);
+            if ($new_name != ''){
+                $author->setName($new_name);
+                $author->save($this->getDoctrine()->getManager());
+                return $this->render('default/updateAuthor.html.twig', [
+                    'base_dir' => realpath($this->getParameter('kernel.project_dir')).DIRECTORY_SEPARATOR,
+                    'author_name' => strval($author->getName()),
+                ]);
+            }
+            else return new Response("Name cant be empty");
         }
-        return new Response("200");
+        return new Response("", 200);
     }
 }

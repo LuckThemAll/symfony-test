@@ -6,7 +6,6 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Persistence\ObjectManager;
 use Doctrine\ORM\Mapping as ORM;
 
-
 /**
  * @ORM\Entity
  * @ORM\Table(name="Books")
@@ -16,11 +15,6 @@ class Book
     function __construct()
     {
         $this->authors = new ArrayCollection();
-    }
-
-    public function __toString()
-    {
-        return $this->name;
     }
 
     /**
@@ -50,100 +44,70 @@ class Book
      * @ORM\JoinTable(name="books_authors")
      */
     private $authors;
-}
 
-
-/**
- * @ORM\Entity
- * @ORM\Table(name="Authors")
- */
-class Author
-{
-    function __construct($name)
+    /**
+     * @return mixed
+     */
+    public function getDescription()
     {
-        $this->name = $name;
-        $this->books = new ArrayCollection();
-    }
-
-    public function __toString()
-    {
-        return $this->name;
+        return (string) $this->description;
     }
 
     /**
-     * @ORM\Column(type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="AUTO")
+     * @param mixed $description
      */
-    private $id;
-
-    /**
-     * @ORM\Column(type="string", length=100)
-     */
-    private $name;
-
-    /**
-     * @ORM\ManyToMany(targetEntity="Book", mappedBy="authors")
-     */
-    private $books;
-
-    /**
-     * @return integer
-     */
-    public function getId()
+    public function setDescription($description): void
     {
-        return $this->id;
+        $this->description = $description;
     }
 
     /**
-     * @param mixed $id
+     * @return mixed
      */
-    public function setId($id): void
+    public function getPublication_date()
     {
-        $this->id = $id;
+        return (integer) $this->publication_date;
     }
 
     /**
-     * @return string
+     * @param mixed $publication_date
+     */
+    public function setPublicationDate($publication_date): void
+    {
+        $this->publication_date = $publication_date;
+    }
+
+    /**
+     * @return mixed
      */
     public function getName()
     {
-        return $this->name;
+        return (string) $this->name;
     }
 
     /**
-     * @param mixed $name
+     * @param mixed $publication_date
      */
     public function setName($name): void
     {
         $this->name = $name;
     }
 
-    public function save(ObjectManager $entityManager)
+    /**
+     * @return mixed
+     */
+    public function getAuthors()
     {
-        $entityManager->persist($this);
-        $entityManager->flush();
-    }
-
-    public function delete(ObjectManager $entityManager)
-    {
-        $entityManager->remove($this);
-        $entityManager->flush();
+        return $this->authors;
     }
 
     /**
      * @return mixed
      */
-    public function getBooks()
+    public function getId()
     {
-        return $this->books;
-    }
-
-    /**
-     * @param mixed $books
-     */
-    public function setBooks($books): void
-    {
-        $this->books = $books;
+        return $this->id;
     }
 }
+
+
