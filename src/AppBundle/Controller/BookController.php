@@ -5,6 +5,7 @@ use AppBundle\Entity\Author;
 use AppBundle\Entity\Book;
 use AppBundle\Service\FileUploader;
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\ORM\EntityRepository;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -60,6 +61,9 @@ class BookController extends BaseController
     public function showAuthors(Request $request)
     {
         $repository = $this->getDoctrine()->getRepository(Book::class);
+
+//        $query = $this->getDoctrine()->getRepository(Book::class)->findBy('count(authors)');
+//        var_dump($query);
         return $this->render('default/books.html.twig', [
             'books' => $repository->findAll(),
             'base_dir' => realpath($this->getParameter('kernel.project_dir')) . DIRECTORY_SEPARATOR,
@@ -86,7 +90,7 @@ class BookController extends BaseController
         if ($request->getMethod() == "GET") {
             return $this->render('default/updateBook.html.twig', [
                 'base_dir' => realpath($this->getParameter('kernel.project_dir')) . DIRECTORY_SEPARATOR,
-                'book' => $book,
+
                 'authors' => $authors,
                 'current_authors_names' => $current_authors_names,
             ]);
@@ -112,6 +116,7 @@ class BookController extends BaseController
                 'author_name' => strval($author->getName()),
                 'current_authors_names' => $current_authors_names,
                 'authors' => $authors,
+                'book' => $book,
             ]);
         }
         return new Response("", 200);

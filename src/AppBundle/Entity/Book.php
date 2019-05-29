@@ -46,7 +46,7 @@ class Book
     private $authors;
 
     /**
-     * @ORM\Column(type="string")
+     * @ORM\Column(type="string", nullable=true)
      */
     private $image;
 

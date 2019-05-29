@@ -12,7 +12,8 @@
         Author {{ created_author }} created successfully <br>
     {% endif %}
     <input type="text" placeholder="Alexander Pushkin..." name="name">
-    <input type="submit" value="Submit">
+    <input type="submit" value="Submit"><br>
+    <button type="button" onclick="window.open('/authors');">Authors</button>
 </form>
 {% block body %}{% endblock %}
 {% block javascripts %}{% endblock %}
