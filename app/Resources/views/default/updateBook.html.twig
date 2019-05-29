@@ -11,9 +11,11 @@
             href = "/books/delete/" + id;
             $.post({
                 url: href,
-                success: function (){$("#"+id).remove();}
+                success: function (){$("#"+id).remove();
+                    window.open('/books/');
+                    window.close();
+                }
             });
-            // window.open(href);
         }
     </script>
 </head>
