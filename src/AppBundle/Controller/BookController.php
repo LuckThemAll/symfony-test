@@ -29,15 +29,15 @@ class BookController extends BaseController
             $description = $request->request->get('description');
             $publication_date = $request->request->get('publication_date');
             $file = $request->files->get("image");
-            var_dump($_FILES);
-            $file_name = $file->getClientOriginalName();
+//            var_dump($_FILES);
+//            $file_name = $file->getClientOriginalName();
             $up_loader = new FileUploader();
-            $up_loader->upload($this->getParameter('image_directory'), $file, $file_name);
+//            $up_loader->upload($this->getParameter('image_directory'), $file, $file_name);
             $book = New Book();
             $book->setName($name);
             $book->setPublicationDate($publication_date);
             $book->setDescription($description);
-            $book->setImage($file_name);
+//            $book->setImage($file_name);
             foreach ($request->request->all()['authors'] as $author_id) {
                 $author = $this->getDoctrine()->getRepository(Author::class)->find($author_id);
                 $book->getAuthors()->add($author);
