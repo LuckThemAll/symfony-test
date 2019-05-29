@@ -92,4 +92,21 @@ class AuthorController extends BaseController
         }
         return new Response("", 200);
     }
+
+    /**
+     * @Route("/authors/get/all", name="get_authors")
+     * @param Request $request
+     * @return Response
+     */
+    public function getAuthors(Request $request)
+    {
+        $repository = $this->getDoctrine()->getRepository(Author::class);
+        $authors = $repository->findAll();
+        $data = array();
+        foreach ($authors as $author) {
+            $data[$author->getId()] = $author->getName();
+        }
+        echo json_encode($data);
+        return new Response("", 200);
+    }
 }
