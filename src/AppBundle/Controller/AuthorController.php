@@ -4,35 +4,36 @@ namespace AppBundle\Controller;
 
 use AppBundle\Entity\Author;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use AppBundle\Entity\Book;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
 
 class AuthorController extends BaseController
 {
     /**
-     * @Route("/authors/create/", name="create_action")
+     * @Route("/authors/create/", name="create_form", methods={"GET", "POST"})
      */
     public function createAction(Request $request)
     {
-        if ($request->getMethod() == "GET"){
-            return $this->render('default/createAuthor.html.twig', [
-                'base_dir' => realpath($this->getParameter('kernel.project_dir')).DIRECTORY_SEPARATOR,
-                'method' => $request->getMethod(),
-            ]);
+        $author = new Author();
+        $form = $this->createFormBuilder($author)
+            ->add('name', TextType::class, ['label' => 'Author name'])
+            ->add('save', SubmitType::class, ['label' => 'Create Author'])
+            ->getForm();
+        $form->handleRequest($request);
+        if ($form->isSubmitted() && $form->isValid()) {
+            $author = $form->getData();
+            $em = $this->getDoctrine()->getManager();
+            $em->persist($author);
+            $em->flush();
+
+            return $this->redirectToRoute('authors_index');
         }
-        if ($request->getMethod() == "POST"){
-            $name = $request->request->get('name');
-            $author = New Author($name);
-            $author->save($this->getDoctrine()->getManager());
-            return $this->render('default/createAuthor.html.twig', [
-                'base_dir' => realpath($this->getParameter('kernel.project_dir')).DIRECTORY_SEPARATOR,
-                'created_author' => $name,
-            ]);
-        }
-        return $this->render('default/index.html.twig', [
-            'base_dir' => realpath($this->getParameter('kernel.project_dir')).DIRECTORY_SEPARATOR,
+        return $this->render('default/createAuthor.html.twig', [
+            'form' => $form->createView(),
         ]);
     }
 

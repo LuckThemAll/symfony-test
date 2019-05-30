@@ -12,9 +12,8 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class Author
 {
-    function __construct($name)
+    function __construct()
     {
-        $this->name = $name;
         $this->books = new ArrayCollection();
     }
 
@@ -65,18 +64,6 @@ class Author
     public function setName($name): void
     {
         $this->name = $name;
-    }
-
-    public function save(ObjectManager $entityManager)
-    {
-        $entityManager->persist($this);
-        $entityManager->flush();
-    }
-
-    public function delete(ObjectManager $entityManager)
-    {
-        $entityManager->remove($this);
-        $entityManager->flush();
     }
 
     /**
