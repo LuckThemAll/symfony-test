@@ -2,18 +2,9 @@
 <html>
 <head>
     <meta charset="UTF-8" />
-    <title>{% block title %}Welcome!{% endblock %}</title>
-    {% block stylesheets %}{% endblock %}
-    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}" />
+    <title>{% block title %}Create Author{% endblock %}</title>
 </head>
 <body>
-<form name="Author_info" method="post">
-    <input type="text" value="{{ author_name }}" name="name">
-    <input type="submit" value="Submit">
-    <button type="button" onclick="window.open('/books/');">Books</button>
-    <button type="button" onclick="window.open('/authors');">Authors</button>
-</form>
-{% block body %}{% endblock %}
-{% block javascripts %}{% endblock %}
+{{ form(form) }}
 </body>
 </html>

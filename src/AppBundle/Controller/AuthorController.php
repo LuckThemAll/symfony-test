@@ -51,16 +51,20 @@ class AuthorController extends BaseController
 
     /**
      * @Route("/authors/delete/{id}", name="authors_delete", requirements={"id"="\d+"})
-     * @param Request $request
      * @param $id
      * @return Response
      */
-    public function deleteAuthor(Request $request, $id)
+    public function deleteAuthor($id)
     {
         $repository = $this->getDoctrine()->getRepository(Author::class);
         $author = $repository->find($id);
-        $author->delete($this->getDoctrine()->getManager());
-        return new Response("200");
+        if ($author){
+            $em = $this->getDoctrine()->getManager();
+            $em->remove($author);
+            $em->flush();
+            return new Response('', 200);
+        }
+        return new Response('', 500);
     }
 
     /**
@@ -73,25 +77,22 @@ class AuthorController extends BaseController
     {
         $repository = $this->getDoctrine()->getRepository(Author::class);
         $author = $repository->find($id);
-        if ($request->getMethod() == "GET"){
-            return $this->render('default/updateAuthor.html.twig', [
-                'base_dir' => realpath($this->getParameter('kernel.project_dir')).DIRECTORY_SEPARATOR,
-                'author_name' => strval($author->getName()),
-            ]);
+        $form = $this->createFormBuilder($author)
+            ->add('name', TextType::class, ['data' => $author->getName()])
+            ->add('save', SubmitType::class, ['label' => 'Update Author'])
+            ->getForm();
+        $form->handleRequest($request);
+        if ($form->isSubmitted() && $form->isValid()) {
+            $author = $form->getData();
+            $em = $this->getDoctrine()->getManager();
+            $em->persist($author);
+            $em->flush();
+
+            return $this->redirectToRoute('authors_index');
         }
-        if ($request->getMethod() == "POST"){
-            $new_name = $request->request->get('name');
-            if ($new_name != ''){
-                $author->setName($new_name);
-                $author->save($this->getDoctrine()->getManager());
-                return $this->render('default/updateAuthor.html.twig', [
-                    'base_dir' => realpath($this->getParameter('kernel.project_dir')).DIRECTORY_SEPARATOR,
-                    'author_name' => strval($author->getName()),
-                ]);
-            }
-            else return new Response("Name cant be empty");
-        }
-        return new Response("", 200);
+        return $this->render('default/updateAuthor.html.twig', [
+            'form' => $form->createView(),
+        ]);
     }
 
     /**
@@ -104,6 +105,7 @@ class AuthorController extends BaseController
         $repository = $this->getDoctrine()->getRepository(Author::class);
         $authors = $repository->findAll();
         $data = array();
+        /* @var Author $author */
         foreach ($authors as $author) {
             $data[$author->getId()] = $author->getName();
         }
