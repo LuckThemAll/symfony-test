@@ -5,6 +5,8 @@ namespace AppBundle\Entity;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Persistence\ObjectManager;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
+
 
 /**
  * @ORM\Entity
@@ -35,9 +37,9 @@ class Book
     private $description;
 
     /**
-     * @ORM\Column(type="integer")
+     * @ORM\Column(type="date", length=10)
      */
-    private $publication_date;
+    private $publicationDate;
 
     /**
      * @ORM\ManyToMany(targetEntity="Author", inversedBy="books")
@@ -47,8 +49,9 @@ class Book
 
     /**
      * @ORM\Column(type="string", nullable=true)
+     * @Assert\File(mimeTypes={ "image/png", "image/jpeg" })
      */
-    private $image;
+    public $image;
 
     /**
      * @return mixed
@@ -69,17 +72,17 @@ class Book
     /**
      * @return mixed
      */
-    public function getPublication_date()
+    public function getPublicationDate()
     {
-        return (integer) $this->publication_date;
+        return $this->publicationDate;
     }
 
     /**
-     * @param mixed $publication_date
+     * @param mixed $publicationDate
      */
-    public function setPublicationDate($publication_date): void
+    public function setPublicationDate($publicationDate): void
     {
-        $this->publication_date = $publication_date;
+        $this->publicationDate = $publicationDate;
     }
 
     /**
@@ -91,7 +94,7 @@ class Book
     }
 
     /**
-     * @param mixed $publication_date
+     * @param mixed $name
      */
     public function setName($name): void
     {
