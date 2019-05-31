@@ -31,6 +31,10 @@ framework:
     assets: ~
     php_errors:
         log: true
+    assets:
+        packages:
+            downloads:
+                base_path: files/images/
 
 # Twig Configuration
 twig:
