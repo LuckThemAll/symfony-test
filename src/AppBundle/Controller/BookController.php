@@ -4,6 +4,7 @@ namespace AppBundle\Controller;
 use AppBundle\Entity\Author;
 use AppBundle\Entity\Book;
 use AppBundle\Service\FileUploader;
+use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityRepository;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
@@ -74,9 +75,11 @@ class BookController extends BaseController
      */
     public function showAuthors(Request $request)
     {
-        $repository = $this->getDoctrine()->getRepository(Book::class);
-        return $this->render('default/books.html.twig', [
-            'books' => $repository->findAll(),
+        $books_repository = $this->getDoctrine()->getRepository(Book::class);
+        $authors_repository = $this->getDoctrine()->getRepository(Author::class);
+        return $this->render('default/book.html.twig', [
+            'books' => $books_repository->findAll(),
+            'authors' => $authors_repository->findAll(),
             'files_dir' => $this->getParameter('image_directory')
         ]);
     }
@@ -130,6 +133,63 @@ class BookController extends BaseController
             'form' => $form->createView(),
         ]);
     }
+
+    /**
+     * @Route("/books/update/inline/{id}", name="books_update_inline")
+     * @param Request $request
+     * @param $id
+     * @return Response
+     */
+    public function inlineUpdateBook(Request $request, $id)
+    {
+        $book_repository = $this->getDoctrine()->getRepository(Book::class);
+        if ($book_repository->find($id)){
+            /** @var Book $book */
+            $book = $book_repository->find($id);
+
+            $new_name = $request->request->get('name');
+            $new_description = $request->request->get('description');
+            $new_publication_date = $request->request->get('publicationDate');
+
+            $book->setName($new_name);
+            $book->setDescription($new_description);
+            $book->setPublicationDate(DateTime::createFromFormat('Y-m-d', $new_publication_date));
+
+            if($new_authors = $request->request->all()['authors']){
+                $book->getAuthors()->clear();
+                foreach ($request->request->all()['authors'] as $author_id) {
+                    $author = $this->getDoctrine()->getRepository(Author::class)->find($author_id);
+                    $book->getAuthors()->add($author);
+                }
+            }
+            $em = $this->getDoctrine()->getManager();
+            $em->persist($book);
+            $em->flush();
+
+            $authors = [];
+            /** @var Author $author */
+            foreach ($book->getAuthors() as $author){
+                $authors[$author->getId()] = $author->getName();
+            }
+
+            $data = array(
+                'name' => $book->getName(),
+                'description' => $book->getDescription(),
+                'publicationDate' => $new_publication_date,
+                'authors' => $authors
+            );
+            echo json_encode($data);
+            return new Response('', 200);
+
+        }
+//        $file = $form['image']->getData();
+//        $fileName = md5(uniqid()).'.'.$file->guessExtension();
+//        $upLoader = new FileUploader();
+//        $upLoader->upload($this->getParameter('image_directory'), $file, $fileName);
+//        $book->setImage($fileName);
+        return new Response('', 500);
+    }
+
 
     /**
      * @Route("/books/delete/{id}", name="book_delete", requirements={"id"="\d+"})

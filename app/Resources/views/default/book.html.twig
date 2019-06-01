@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <title>{% block title %}Welcome!{% endblock %}</title>
+    {% block stylesheets %}{% endblock %}
+    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
+    <script type="text/javascript">
+        function change_field(input_id, name_id) {
+            var input_hidden = $("#" + input_id).attr('hidden');
+            if (typeof input_hidden !== typeof undefined && input_hidden !== false) {
+                $("#" + input_id).removeAttr('hidden');
+                $("#" + name_id).attr('hidden', 'hidden');
+            } else {
+                $("#" + name_id).removeAttr('hidden');
+                $("#" + input_id).attr('hidden', 'hidden');
+            }
+        }
+        $(function() {
+            $('form').submit(function(e) {
+                var $form = $(this);
+                var book_id = $form.attr('book_id');
+                var name_input = $('#name_' + book_id);
+
+                var description_input = $('#description_' + book_id);
+
+                var publicationDate_input = $('#publicationDate_' + book_id);
+
+                var authors_select = $('#authors_' + book_id);
+
+                $.ajax({
+                    type: 'POST',
+                    url: $form.attr('action'),
+                    data: $form.serialize()
+                }).done(
+                    function(json_data) {
+                        console.log('success');
+                        var data = JSON.parse(json_data);
+
+                        name_input.attr('hidden', 'hidden');
+                        name_input.attr('value', data.name);
+                        name_input.removeAttr('disabled');
+
+                        description_input.attr('hidden', 'hidden');
+                        description_input.attr('value', data.description);
+                        description_input.removeAttr('disabled');
+
+                        publicationDate_input.attr('hidden', 'hidden');
+                        publicationDate_input.attr('value', data.publicationDate);
+                        publicationDate_input.removeAttr('disabled');
+
+                        authors_select.attr('hidden', 'hidden');
+                        authors_select.removeAttr('disabled');
+
+                        var name_div = $('#name_div_' + book_id);
+                        name_div.removeAttr('hidden');
+                        name_div.empty().html(data.name);
+
+                        var description_div = $('#description_div_' + book_id);
+                        description_div.removeAttr('hidden');
+                        description_div.empty().html(data.description);
+
+                        var publicationDate_div = $('#publicationDate_div_' + book_id);
+                        publicationDate_div.removeAttr('hidden');
+                        publicationDate_div.empty().html(data.publicationDate);
+
+                        var authors_div = $('#authors_div_' + book_id);
+                        authors_div.removeAttr('hidden');
+                        authors_div.empty();
+                        text = '';
+                        for (author_id in data.authors){
+                            text += data.authors[author_id] + '; </br>';
+                        }
+                        authors_div.html(text);
+                    }
+                ).fail(function() {
+                    console.log('fail');
+                });
+                name_input.attr('disabled', 'true');
+                description_input.attr('disabled', 'true');
+                publicationDate_input.attr('disabled', 'true');
+                authors_select.attr('disabled', 'true');
+                e.preventDefault();
+            });
+        });
+    </script>
+</head>
+<body>
+<table>
+    <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Description</th>
+        <th>Publication date</th>
+        <th>Authors</th>
+        <th>Image</th>
+        <th>Action</th>
+    </tr>
+    {% for book in books %}
+        <tr id="{{ book.id }}">
+            <form method="post" book_id="{{ book.id }}" action="/books/update/inline/{{ book.id }}">
+                <td>
+                    {{ book.id }}
+                </td>
+                <td ondblclick="change_field('name_{{ book.id }}', 'name_div_{{ book.id }}');">
+                    <div id="name_div_{{ book.id }}">
+                        {{ book.name }}
+                    </div>
+                        <input id="name_{{ book.id }}" hidden="hidden" type="text" name="name" value="{{ book.name }}">
+                </td>
+                <td ondblclick="change_field('description_{{ book.id }}', 'description_div_{{ book.id }}');">
+                    <div id="description_div_{{ book.id }}">
+                        {{ book.description }}
+                    </div>
+                        <input id="description_{{ book.id }}" hidden="hidden" type="text" name="description" value="{{ book.description }}">
+                </td>
+                <td ondblclick="change_field('publicationDate_{{ book.id }}', 'publicationDate_div_{{ book.id }}');">
+                    <div id="publicationDate_div_{{ book.id }}">
+                        {{ book.publicationDate.format('Y-m-d') }}
+                    </div>
+                        <input id="publicationDate_{{ book.id }}" hidden="hidden" type="date" name="publicationDate" value="{{ book.publicationDate.format('Y-m-d') }}">
+                </td>
+                <td ondblclick="change_field('authors_div_{{ book.id }}', 'authors_{{ book.id }}');">
+                    <div id="authors_div_{{ book.id }}">
+                        {% for author in book.authors %}
+                            {{ author.name }};<br>
+                        {% endfor %}
+                    </div>
+                    <select id="authors_{{ book.id }}" hidden="hidden" multiple="multiple" name="authors[]" required="required">
+                        {% for author in authors %}
+                            <option value="{{ author.id }}" {% if author in book.authors %} selected {% endif %}>{{ author.name }}</option>
+                        {% endfor %}
+                    </select>
+                </td>
+                <td><img src="{{ asset(book.image, 'downloads') }}" style="height: 128px; width: 128px"></td>
+                <td>
+                    <button type="button" onclick="silent_remove({{ book.id }});">Delete</button>
+                    <button type="button" onclick="window.open('./update/{{ book.id }}');">Edit</button>
+                    <button type="submit">OK</button>
+                </td>
+            </form>
+        </tr>
+    {% endfor %}
+</table>
+</body>
+</html>
