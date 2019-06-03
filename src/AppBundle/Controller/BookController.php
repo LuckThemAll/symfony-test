@@ -73,7 +73,7 @@ class BookController extends BaseController
      * @param Request $request
      * @return Response
      */
-    public function showAuthors(Request $request)
+    public function showBooks(Request $request)
     {
         $books_repository = $this->getDoctrine()->getRepository(Book::class);
         $authors_repository = $this->getDoctrine()->getRepository(Author::class);
@@ -199,7 +199,7 @@ class BookController extends BaseController
      * @param $id
      * @return Response
      */
-    public function deleteAuthor($id)
+    public function deleteBook($id)
     {
         $repository = $this->getDoctrine()->getRepository(Book::class);
         $book = $repository->find($id);

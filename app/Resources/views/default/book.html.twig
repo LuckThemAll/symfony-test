@@ -7,6 +7,15 @@
     <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}" />
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
     <script type="text/javascript">
+        function silent_remove(id) {
+            href = "/books/delete/" + id;
+            $.post({
+                url: href,
+                success: function (){$("#"+id).remove();}
+            });
+            // window.open(href);
+        }
+
         function change_field(input_id, name_id) {
             var input_hidden = $("#" + input_id).attr('hidden');
             if (typeof input_hidden !== typeof undefined && input_hidden !== false) {
@@ -87,6 +96,22 @@
     </script>
 </head>
 <body>
+<div id="filters">
+    Name contains <input type="text" placeholder="War and..." name="filter_name"><br>
+    Name description <input type="text" placeholder="Very interesting..." name="filter_description"><br>
+    Publication date from <input type="date" name="filter_date_from">
+    to <input type="date" name="filter_date_from"><br>
+    Authors contains <select multiple="multiple" size="2" name="filter_authors[]">
+        {% for author in authors %}
+            <option value="{{ author.name }}">
+                {{ author.name }}
+            </option>
+        {% endfor %}
+    </select><br>
+    Image <input type="radio" name="filter_image" value="Yes">Yes
+          <input type="radio" name="filter_image" value="No">No
+          <input type="radio" name="filter_image" value="Mem">Irrelevant
+</div>
 <table>
     <tr>
         <th>ID</th>
