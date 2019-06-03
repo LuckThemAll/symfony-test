@@ -94,6 +94,7 @@ class BookController extends BaseController
     {
         $book_repository = $this->getDoctrine()->getRepository(Book::class);
         $book = $book_repository->find($id);
+        $fileName = $book->getImage();
         $form = $this->createFormBuilder($book)
             ->add('name', TextType::class, ['label' => 'Title'])
             ->add('description', TextType::class, ['label' => 'Description'])
@@ -109,7 +110,6 @@ class BookController extends BaseController
             ])
             ->add('image', FileType::class, [
                 'label' => 'Image',
-                'empty_data' => false,
                 'required' => false,
                 'data_class' => null
             ])
@@ -119,10 +119,13 @@ class BookController extends BaseController
         if ($form->isSubmitted() && $form->isValid()) {
             $book = $form->getData();
             $file = $form['image']->getData();
-            $fileName = md5(uniqid()).'.'.$file->guessExtension();
-            $upLoader = new FileUploader();
-            $upLoader->upload($this->getParameter('image_directory'), $file, $fileName);
-            $book->setImage($fileName);
+            if (!is_null($file)){
+                $fileName = md5(uniqid()).'.'.$file->guessExtension();
+                $upLoader = new FileUploader();
+                $upLoader->upload($this->getParameter('image_directory'), $file, $fileName);
+                $book->setImage($fileName);
+            } else
+                $book->setImage($fileName);
             $em = $this->getDoctrine()->getManager();
             $em->persist($book);
             $em->flush();
