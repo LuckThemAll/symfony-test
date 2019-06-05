@@ -165,6 +165,7 @@ class BookController extends BaseController
      */
     public function inlineUpdateBook(Request $request, $id)
     {
+        dump($request);
         $book_repository = $this->getDoctrine()->getRepository(Book::class);
         if ($book_repository->find($id)){
             /** @var Book $book */
@@ -173,6 +174,12 @@ class BookController extends BaseController
             $new_name = $request->request->get('name');
             $new_description = $request->request->get('description');
             $new_publication_date = $request->request->get('publicationDate');
+//            $new_image = $request->files->get('image');
+//            var_dump($request->request);
+//            $fileName = md5(uniqid()).'.'.$new_image->guessExtension();
+//            $upLoader = new FileUploader();
+//            $upLoader->upload($this->getParameter('image_directory'), $new_image, $fileName);
+//            $book->setImage($fileName);
 
             $book->setName($new_name);
             $book->setDescription($new_description);
@@ -195,21 +202,17 @@ class BookController extends BaseController
                 $authors[$author->getId()] = $author->getName();
             }
 
+            $date = new DateTime($new_publication_date);
             $data = array(
                 'name' => $book->getName(),
                 'description' => $book->getDescription(),
-                'publicationDate' => $new_publication_date,
+                'publicationDate' => $date->format('d-m-Y'),
                 'authors' => $authors
             );
             echo json_encode($data);
             return new Response('', 200);
 
         }
-//        $file = $form['image']->getData();
-//        $fileName = md5(uniqid()).'.'.$file->guessExtension();
-//        $upLoader = new FileUploader();
-//        $upLoader->upload($this->getParameter('image_directory'), $file, $fileName);
-//        $book->setImage($fileName);
         return new Response('', 500);
     }
 

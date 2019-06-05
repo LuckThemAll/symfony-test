@@ -159,7 +159,12 @@
                         {% endfor %}
                     </select>
                 </td>
-                <td><img src="{{ asset(book.image, 'downloads') }}" style="height: 128px; width: 128px"></td>
+                <td ondblclick="change_field('image_div_{{ book.id }}', 'image_{{ book.id }}');">
+                    <div id="image_div_{{ book.id }}">
+                        <img src="{{ asset(book.image, 'downloads') }}" style="height: 128px; width: 128px">
+                    </div>
+                    <input id="image_{{ book.id }}" type="file" name="image" hidden="hidden">
+                </td>
                 <td>
                     <button type="button" onclick="silent_remove({{ book.id }});">Delete</button>
                     <button type="button" onclick="window.open('./update/{{ book.id }}');">Edit</button>
