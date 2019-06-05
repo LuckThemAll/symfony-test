@@ -3,10 +3,12 @@ namespace AppBundle\Controller;
 
 use AppBundle\Entity\Author;
 use AppBundle\Entity\Book;
+use AppBundle\Repositories\BookRepository;
 use AppBundle\Service\FileUploader;
 use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityRepository;
+use Doctrine\ORM\Mapping\ClassMetadata;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
@@ -35,7 +37,7 @@ class BookController extends BaseController
             ->add('publicationDate', DateType::class, [
                 'widget' => 'single_text',
                 'format' => 'yyyy-MM-dd',
-                'input'  => 'string'
+                'input'  => 'datetime'
                 ])
             ->add('authors', EntityType::class, [
                 'class' => 'AppBundle:Author',
@@ -77,10 +79,28 @@ class BookController extends BaseController
     {
         $books_repository = $this->getDoctrine()->getRepository(Book::class);
         $authors_repository = $this->getDoctrine()->getRepository(Author::class);
+        $conds = [];
+        $conds['filter_name'] = $request->query->get('filter_name');
+        $conds['filter_description'] = $request->query->get('filter_description');
+        $conds['filter_date_from'] = $request->query->get('filter_date_from');
+        $conds['filter_date_to'] = $request->query->get('filter_date_to');
+        $conds['filter_authors'] = [];
+        if ($request->query->get('filter_authors')){
+            foreach ($request->query->get('filter_authors') as $author_id) {
+                array_push($conds['filter_authors'], $authors_repository->find($author_id));
+            }
+        }
+
+        $conds['filter_image'] = $request->query->get('filter_image');
+//        var_dump($conds);
+        $custum_repos = new BookRepository($this->getDoctrine()->getManager(), new ClassMetadata(Book::class));
+        $custum_repos->parse_conditions($conds);
+//        var_dump($custum_repos->getQuery());
         return $this->render('default/book.html.twig', [
-            'books' => $books_repository->findAll(),
+            'books' => $custum_repos->getQuery()->getResult(),
             'authors' => $authors_repository->findAll(),
-            'files_dir' => $this->getParameter('image_directory')
+            'files_dir' => $this->getParameter('image_directory'),
+            'conds' => $conds
         ]);
     }
 

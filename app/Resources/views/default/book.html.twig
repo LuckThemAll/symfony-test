@@ -27,7 +27,7 @@
             }
         }
         $(function() {
-            $('form').submit(function(e) {
+            $('.tr-form').submit(function(e) {
                 var $form = $(this);
                 var book_id = $form.attr('book_id');
                 var name_input = $('#name_' + book_id);
@@ -96,22 +96,23 @@
     </script>
 </head>
 <body>
-<div id="filters">
-    Name contains <input type="text" placeholder="War and..." name="filter_name"><br>
-    Name description <input type="text" placeholder="Very interesting..." name="filter_description"><br>
-    Publication date from <input type="date" name="filter_date_from">
-    to <input type="date" name="filter_date_from"><br>
-    Authors contains <select multiple="multiple" size="2" name="filter_authors[]">
-        {% for author in authors %}
-            <option value="{{ author.name }}">
-                {{ author.name }}
-            </option>
-        {% endfor %}
-    </select><br>
-    Image <input type="radio" name="filter_image" value="Yes">Yes
-          <input type="radio" name="filter_image" value="No">No
-          <input type="radio" name="filter_image" value="Mem">Irrelevant
-</div>
+<form name="filters" method="get">
+    <div id="filters">
+        Name contains <input type="text" placeholder="War and..." name="filter_name" {% if conds.filter_name != '' %}value="{{ conds.filter_name }}"{% endif %}><br>
+        Name description <input type="text" placeholder="Very interesting..." name="filter_description"{% if conds.filter_description != '' %} value="{{ conds.filter_description }}"{% endif %}><br>
+        Publication date from <input type="date" name="filter_date_from" {% if conds.filter_date_from != '' %} value="{{ conds.filter_date_from }}"{% endif %}>
+        to <input type="date" name="filter_date_to" {% if conds.filter_date_to != '' %} value="{{ conds.filter_date_to }}"{% endif %}><br>
+        Authors contains
+        <select multiple="multiple" size="2" name="filter_authors[]">
+            {% for author in authors %}
+                <option value="{{ author.id }}">
+                    {{ author.name }}
+                </option>
+            {% endfor %}
+        </select><br>
+        <button type="submit">Show</button>
+    </div>
+</form>
 <table>
     <tr>
         <th>ID</th>
@@ -124,7 +125,7 @@
     </tr>
     {% for book in books %}
         <tr id="{{ book.id }}">
-            <form method="post" book_id="{{ book.id }}" action="/books/update/inline/{{ book.id }}">
+            <form class="tr-form" method="post" book_id="{{ book.id }}" enctype="multipart/form-data" action="/books/update/inline/{{ book.id }}" >
                 <td>
                     {{ book.id }}
                 </td>
@@ -142,7 +143,7 @@
                 </td>
                 <td ondblclick="change_field('publicationDate_{{ book.id }}', 'publicationDate_div_{{ book.id }}');">
                     <div id="publicationDate_div_{{ book.id }}">
-                        {{ book.publicationDate.format('Y-m-d') }}
+                        {{ book.publicationDate.format('d-m-Y') }}
                     </div>
                         <input id="publicationDate_{{ book.id }}" hidden="hidden" type="date" name="publicationDate" value="{{ book.publicationDate.format('Y-m-d') }}">
                 </td>
