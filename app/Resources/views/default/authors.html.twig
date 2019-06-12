@@ -13,7 +13,6 @@
                 url: href,
                 success: function (){$("#"+id).remove();}
             });
-            // window.open(href);
         }
     </script>
 </head>
@@ -37,8 +36,8 @@
         {% endfor %}
     </table>
 </form>
-<button type="button" onclick="window.open('/authors/create/');">New author</button>
-<button type="button" onclick="window.open('/books/');">Books</button>
+<input type="button" value="New Author" onClick='location.href="/authors/create/"'>
+<input type="button" value="Books" onClick='location.href="/books/"'>
 {% block body %}{% endblock %}
 {% block javascripts %}{% endblock %}
 </body>

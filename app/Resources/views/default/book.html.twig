@@ -13,7 +13,6 @@
                 url: href,
                 success: function (){$("#"+id).remove();}
             });
-            // window.open(href);
         }
 
         function change_field(input_id, name_id) {
@@ -56,7 +55,9 @@
                         description_input.removeAttr('disabled');
 
                         publicationDate_input.attr('hidden', 'hidden');
-                        publicationDate_input.attr('value', data.publicationDate);
+                        var d = data.publicationDate.split('-');
+                        var new_d = d[2] + '-' + d[1] + '-' + d[0];
+                        publicationDate_input.val(new_d);
                         publicationDate_input.removeAttr('disabled');
 
                         authors_select.attr('hidden', 'hidden');
@@ -94,6 +95,27 @@
             });
         });
     </script>
+    <style>
+        table {
+            font-family: "Lucida Sans Unicode", "Lucida Grande", Sans-Serif;
+            border-collapse: collapse;
+            color: #686461;
+        }
+        th {
+            border-bottom: 3px solid #B9B29F;
+            padding: 10px;
+            text-align: left;
+        }
+        td {
+            padding: 10px;
+        }
+        tr:nth-child(odd) {
+            background: white;
+        }
+        tr:nth-child(even) {
+            background: #E8E6D1;
+        }
+    </style>
 </head>
 <body>
 <form name="filters" method="get">
@@ -135,11 +157,11 @@
                     </div>
                         <input id="name_{{ book.id }}" hidden="hidden" type="text" name="name" value="{{ book.name }}">
                 </td>
-                <td ondblclick="change_field('description_{{ book.id }}', 'description_div_{{ book.id }}');">
+                <td width="360px" ondblclick="change_field('description_{{ book.id }}', 'description_div_{{ book.id }}');">
                     <div id="description_div_{{ book.id }}">
                         {{ book.description }}
                     </div>
-                        <input id="description_{{ book.id }}" hidden="hidden" type="text" name="description" value="{{ book.description }}">
+                        <input width="360px" id="description_{{ book.id }}" hidden="hidden" type="text" name="description" value="{{ book.description }}">
                 </td>
                 <td ondblclick="change_field('publicationDate_{{ book.id }}', 'publicationDate_div_{{ book.id }}');">
                     <div id="publicationDate_div_{{ book.id }}">
@@ -174,5 +196,7 @@
         </tr>
     {% endfor %}
 </table>
+<input type="button" value="Create book" onClick='location.href="create/"'>
+<input type="button" value="Authors" onClick='location.href="/authors/"'>
 </body>
 </html>
