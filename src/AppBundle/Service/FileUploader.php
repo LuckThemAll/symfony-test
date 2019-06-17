@@ -2,6 +2,7 @@
 
 namespace AppBundle\Service;
 
+use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 
 class FileUploader

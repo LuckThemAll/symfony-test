@@ -3,13 +3,17 @@ namespace AppBundle\Controller;
 
 use AppBundle\Entity\Author;
 use AppBundle\Entity\Book;
+use AppBundle\Forms\BookType;
 use AppBundle\Repositories\BookRepository;
 use AppBundle\Service\FileUploader;
 use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\DBAL\DBALException;
+use Doctrine\ORM\EntityNotFoundException;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Mapping\ClassMetadata;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
+use Symfony\Component\Config\Definition\Exception\Exception;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
@@ -18,6 +22,7 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Annotation\Route;
 
 
@@ -30,44 +35,32 @@ class BookController extends BaseController
      */
     public function createAction(Request $request)
     {
-        $book = new Book();
-        $form = $this->createFormBuilder($book)
-            ->add('name', TextType::class, ['label' => 'Title'])
-            ->add('description', TextType::class, ['label' => 'Description'])
-            ->add('publicationDate', DateType::class, [
-                'widget' => 'single_text',
-                'format' => 'yyyy-MM-dd',
-                'input'  => 'datetime'
-                ])
-            ->add('authors', EntityType::class, [
-                'class' => 'AppBundle:Author',
-                'choice_label' => 'name',
-                'multiple' => true
-            ])
-            ->add('image', FileType::class, [
-                'label' => 'Image',
-                'empty_data' => false,
-                'required' => true,
-            ])
-            ->add('save', SubmitType::class, ['label' => 'Create Book'])
-            ->getForm();
+        $options['required'] = true;
+        $options['empty_data'] = false;
+        $form = $this->createForm(BookType::class, new Book(), $options);
         $form->handleRequest($request);
-        if ($form->isSubmitted() && $form->isValid()) {
-            $book = $form->getData();
-            $file = $form['image']->getData();
-            $fileName = md5(uniqid()).'.'.$file->guessExtension();
-            $upLoader = new FileUploader();
-            $upLoader->upload($this->getParameter('image_directory'), $file, $fileName);
-            $book->setImage($fileName);
-            $em = $this->getDoctrine()->getManager();
+        if (!$form->isValid()) {
+
+            return $this->render('default/createBook.html.twig', [
+                'form' => $form->createView(),
+            ]);
+        }
+        $book = $form->getData();
+        $file = $form['image']->getData();
+        $fileName = md5(uniqid()).'.'.$file->guessExtension();
+        $upLoader = new FileUploader();
+        $upLoader->upload($this->getParameter('image_directory'), $file, $fileName);
+        $book->setImage($fileName);
+        $em = $this->getDoctrine()->getManager();
+        try{
             $em->persist($book);
             $em->flush();
-
-            return $this->redirectToRoute('books_index');
         }
-        return $this->render('default/createBook.html.twig', [
-            'form' => $form->createView(),
-        ]);
+        catch(DBALException $e){
+            return $this->render(new Response($e->getMessage()));
+        };
+
+        return $this->redirectToRoute('books_index');
     }
 
     /**
@@ -77,30 +70,29 @@ class BookController extends BaseController
      */
     public function showBooks(Request $request)
     {
-        $books_repository = $this->getDoctrine()->getRepository(Book::class);
         $authors_repository = $this->getDoctrine()->getRepository(Author::class);
-        $conds = [];
-        $conds['filter_name'] = $request->query->get('filter_name');
-        $conds['filter_description'] = $request->query->get('filter_description');
-        $conds['filter_date_from'] = $request->query->get('filter_date_from');
-        $conds['filter_date_to'] = $request->query->get('filter_date_to');
-        $conds['filter_authors'] = [];
+        $conditions = [];
+        $conditions['filter_name'] = $request->query->get('filter_name');
+        $conditions['filter_description'] = $request->query->get('filter_description');
+        $conditions['filter_date_from'] = $request->query->get('filter_date_from');
+        $conditions['filter_date_to'] = $request->query->get('filter_date_to');
+        $conditions['filter_authors'] = [];
         if ($request->query->get('filter_authors')){
             foreach ($request->query->get('filter_authors') as $author_id) {
-                array_push($conds['filter_authors'], $authors_repository->find($author_id));
+                array_push($conditions['filter_authors'], $authors_repository->find($author_id));
             }
         }
+        dump($conditions['filter_authors']);
 
-        $conds['filter_image'] = $request->query->get('filter_image');
-//        var_dump($conds);
+        $conditions['filter_image'] = $request->query->get('filter_image');
         $custum_repos = new BookRepository($this->getDoctrine()->getManager(), new ClassMetadata(Book::class));
-        $custum_repos->parse_conditions($conds);
-//        var_dump($custum_repos->getQuery());
+        $custum_repos->parse_conditions($conditions);
+        dump($custum_repos->getQuery());
         return $this->render('default/book.html.twig', [
             'books' => $custum_repos->getQuery()->getResult(),
             'authors' => $authors_repository->findAll(),
             'files_dir' => $this->getParameter('image_directory'),
-            'conds' => $conds
+            'conds' => $conditions
         ]);
     }
 
@@ -112,49 +104,43 @@ class BookController extends BaseController
      */
     public function updateBook(Request $request, $id)
     {
+
         $book_repository = $this->getDoctrine()->getRepository(Book::class);
-        $book = $book_repository->find($id);
+        try{
+            $book = $book_repository->find($id);
+        }
+        catch (EntityNotFoundException $entityNotFoundException){
+            return $this->render(new Response($entityNotFoundException->getMessage()));
+        }
         $fileName = $book->getImage();
-        $form = $this->createFormBuilder($book)
-            ->add('name', TextType::class, ['label' => 'Title'])
-            ->add('description', TextType::class, ['label' => 'Description'])
-            ->add('publicationDate', DateType::class, [
-                'widget' => 'single_text',
-                'format' => 'yyyy-MM-dd',
-                'input'  => 'datetime'
-            ])
-            ->add('authors', EntityType::class, [
-                'class' => 'AppBundle:Author',
-                'choice_label' => 'name',
-                'multiple' => true
-            ])
-            ->add('image', FileType::class, [
-                'label' => 'Image',
-                'required' => false,
-                'data_class' => null
-            ])
-            ->add('save', SubmitType::class, ['label' => 'Update Book'])
-            ->getForm();
+        $form = $this->createForm(BookType::class);
         $form->handleRequest($request);
-        if ($form->isSubmitted() && $form->isValid()) {
-            $book = $form->getData();
-            $file = $form['image']->getData();
-            if (!is_null($file)){
-                $fileName = md5(uniqid()).'.'.$file->guessExtension();
-                $upLoader = new FileUploader();
-                $upLoader->upload($this->getParameter('image_directory'), $file, $fileName);
-                $book->setImage($fileName);
-            } else
-                $book->setImage($fileName);
-            $em = $this->getDoctrine()->getManager();
+
+        if (!$form->isValid()) {
+            return $this->render('default/updateBook.html.twig', [
+                'form' => $form->createView(),
+            ]);
+        }
+        $book = $form->getData();
+        $file = $form['image']->getData();
+        if (!is_null($file)){
+            $fileName = md5(uniqid()).'.'.$file->guessExtension();
+            $upLoader = new FileUploader();
+            $upLoader->upload($this->getParameter('image_directory'), $file, $fileName);
+            $book->setImage($fileName);
+        } else
+            $book->setImage($fileName);
+        $em = $this->getDoctrine()->getManager();
+        try{
             $em->persist($book);
             $em->flush();
-
-            return $this->redirectToRoute('books_index');
         }
-        return $this->render('default/updateBook.html.twig', [
-            'form' => $form->createView(),
-        ]);
+        catch(Exception $e){
+
+        }
+
+
+        return $this->redirectToRoute('books_index');
     }
 
     /**
@@ -165,7 +151,7 @@ class BookController extends BaseController
      */
     public function inlineUpdateBook(Request $request, $id)
     {
-        dump($request);
+//        dump($request);
         $book_repository = $this->getDoctrine()->getRepository(Book::class);
         if ($book_repository->find($id)){
             /** @var Book $book */
@@ -174,16 +160,10 @@ class BookController extends BaseController
             $new_name = $request->request->get('name');
             $new_description = $request->request->get('description');
             $new_publication_date = $request->request->get('publicationDate');
-//            $new_image = $request->files->get('image');
-//            var_dump($request->request);
-//            $fileName = md5(uniqid()).'.'.$new_image->guessExtension();
-//            $upLoader = new FileUploader();
-//            $upLoader->upload($this->getParameter('image_directory'), $new_image, $fileName);
-//            $book->setImage($fileName);
-
-            $book->setName($new_name);
-            $book->setDescription($new_description);
-            $book->setPublicationDate(DateTime::createFromFormat('Y-m-d', $new_publication_date));
+            /* todo create form for filters */
+            $book->setName($new_name)
+                ->setDescription($new_description)
+                ->setPublicationDate($new_publication_date);
 
             if($new_authors = $request->request->all()['authors']){
                 $book->getAuthors()->clear();

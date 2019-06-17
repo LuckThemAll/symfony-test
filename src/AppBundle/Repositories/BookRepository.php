@@ -10,11 +10,15 @@ namespace AppBundle\Repositories;
 
 
 use AppBundle\Entity\Book;
+use AppBundle\Entity\Author;
 use Doctrine\Common\Collections\Criteria;
+use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Mapping;
 use Doctrine\ORM\Query\QueryException;
+use Doctrine\ORM\QueryBuilder;
+use function Symfony\Component\DependencyInjection\Loader\Configurator\expr;
 
 class BookRepository extends EntityRepository
 {
@@ -52,10 +56,17 @@ class BookRepository extends EntityRepository
                         ->setParameter('publicationDateTo', $value);
                 } elseif ($key == $this->authors_val){
 //                    foreach ($value as $author) {
-//                        $this->query->andWhere(' :author INSTANCE OF book.authors')
-//                            ->setParameter('author', $author);
+//                        $this->query->andWhere('a.id IN (:authors)')
+//                            ->setParameter('authors', $value);
 //                    }
+//                    $sub = new QueryBuilder($this->_em);
+//                    $sub->select('aa');
+//                    $sub->from("AppBundle\Entity\Book","aa");
+//                    $sub->andWhere($sub->expr()->exists('select id from aa.authors where id = 2'));
+//
+//                    $this->query->andWhere($this->query->expr()->exists($sub->getDQL()));
                 }
+
             }
         }
     }

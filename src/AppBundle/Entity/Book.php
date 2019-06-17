@@ -14,30 +14,25 @@ use Symfony\Component\Validator\Constraints as Assert;
  */
 class Book
 {
-    function __construct()
-    {
-        $this->authors = new ArrayCollection();
-    }
-
     /**
-     * @ORM\Column(type="integer")
+     * @ORM\Column(type="integer", name="id")
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="AUTO")
      */
     private $id;
 
     /**
-     * @ORM\Column(type="string", length=100)
+     * @ORM\Column(type="string", length=100, name="name")
      */
     private $name;
 
     /**
-     * @ORM\Column(type="string", length=500)
+     * @ORM\Column(type="string", length=500, name="description")
      */
     private $description;
 
     /**
-     * @ORM\Column(type="date", length=10)
+     * @ORM\Column(type="date", length=10, name="publication_date")
      */
     private $publicationDate;
 
@@ -48,29 +43,37 @@ class Book
     private $authors;
 
     /**
-     * @ORM\Column(type="string", nullable=true)
+     * @ORM\Column(type="string", nullable=true, name="image")
      * @Assert\File(mimeTypes={ "image/png", "image/jpeg" })
      */
     public $image;
 
+    public function __construct()
+    {
+        $this->authors = new ArrayCollection();
+    }
+
     /**
-     * @return mixed
+     * @return string
      */
     public function getDescription()
     {
-        return (string) $this->description;
+        return $this->description;
     }
 
     /**
-     * @param mixed $description
+     * @param string $description
+     * @return Book
      */
-    public function setDescription($description): void
+    public function setDescription($description): Book
     {
         $this->description = $description;
+
+        return $this;
     }
 
     /**
-     * @return mixed
+     * @return \DateTime
      */
     public function getPublicationDate()
     {
@@ -78,31 +81,37 @@ class Book
     }
 
     /**
-     * @param mixed $publicationDate
+     * @param \DateTime $publicationDate
+     * @return Book
      */
-    public function setPublicationDate($publicationDate): void
+    public function setPublicationDate($publicationDate): Book
     {
         $this->publicationDate = $publicationDate;
+
+        return $this;
     }
 
     /**
-     * @return mixed
+     * @return string
      */
     public function getName()
     {
-        return (string) $this->name;
+        return $this->name;
     }
 
     /**
-     * @param mixed $name
+     * @param string $name
+     * @return Book
      */
-    public function setName($name): void
+    public function setName($name): Book
     {
         $this->name = $name;
+
+        return $this;
     }
 
     /**
-     * @return mixed
+     * @return ArrayCollection
      */
     public function getAuthors()
     {
@@ -118,19 +127,22 @@ class Book
     }
 
     /**
-     * @return mixed
+     * @return string
      */
     public function getImage()
     {
-        return (string)$this->image;
+        return $this->image;
     }
 
     /**
-     * @param mixed $image
+     * @param string $image
+     * @return Book
      */
-    public function setImage($image): void
+    public function setImage($image): Book
     {
         $this->image = $image;
+
+        return $this;
     }
 }
 
